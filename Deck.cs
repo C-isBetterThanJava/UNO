@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,10 @@ public class Deck : MonoBehaviour
         
     // }
     const int NUM_OF_CARDS = 60;
-    private List<Deck> deck;
-    private Deck lastPlayed = null;
+    private List<Deck> deck = new List<Deck>();
+    private Deck lastPlayed;
     public static Deck deckInstance;
+    public Image previousCard;
 
     public enum COLOR
     {
@@ -42,7 +44,8 @@ public class Deck : MonoBehaviour
     }
 
     public void createDeck(){
-        deck = new List<Deck>();
+        deck.Clear();
+        //deck = new List<Deck>();
         Debug.Log("setUpDeck");
         int i = 0;
         foreach (COLOR c in Enum.GetValues(typeof(COLOR)))
@@ -87,8 +90,11 @@ public class Deck : MonoBehaviour
         return lastPlayed;
     }
 
-    public void setLastPlayed(Deck card){
+    public void setLastPlayed(Deck card, Sprite newLastPlayed){
+        // Debug.Log("lastPlayed");
+        tempGame.gameInstance.currentColor.text = card.MyColor.ToString();
+        previousCard.sprite = newLastPlayed;
         lastPlayed = card;
+        // Debug.Log(lastPlayed.MyColor + " " + lastPlayed.MyValue);
     }
-
 }
