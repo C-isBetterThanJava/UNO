@@ -6,6 +6,6 @@ using UnityEngine.SceneManagement;
 public class ChangeSceneWithButton : MonoBehaviour
 {
     public void LoadScene(string sceneName){
-        SceneManager.LoadScene(sceneName);
+        SceneManager.LoadScene(sceneName); //lets us change scence between the game
     }
 }

@@ -38,7 +38,6 @@ public class tempHumanPlayer : tempPlayer
 
     private int start; //keeps track of current hand indices
     private int end;
-    public bool checkcreateDeck;
     private bool lastSkipped = false; //checks to see if AI last played a skip -> human is skipped over
     private bool firstRound = true;
     public int playedCard;
@@ -47,11 +46,9 @@ public class tempHumanPlayer : tempPlayer
     void Awake()
     {
         tHumanPlayer = this; //first thing that happens when the script runs -> initialize singleton instance and create player hand
-        tHumanPlayer.setRange(0);
-        playerHand = new List<Deck>();
-        checkcreateDeck = true;
-        createPlayerHand();
-        checkcreateDeck = false;
+        tHumanPlayer.setRange(0); //set the range of start to end to 0-6 (7cards)
+        playerHand = new List<Deck>(); //initialize a new deck for user
+        createPlayerHand(); //populate deck
         showDeck(0); //show the visuals of the deck
     }
 
@@ -72,7 +69,7 @@ public class tempHumanPlayer : tempPlayer
     public void drawPlayerCard()
     {
         //same as drawCardConsequences, but ends the round for the player by calling the endPlayerTurn()
-        if (Deck.deckInstance.getDeck().Count < 8) //refresh deck if not many cards left
+        if (Deck.deckInstance.getDeck().Count < 8) //refresh deck if not many cards left to ensure we never run out of cards
         {
             Debug.Log("deck refresh");
             Deck.deckInstance.createDeck();
@@ -84,17 +81,13 @@ public class tempHumanPlayer : tempPlayer
         {
             Debug.Log("cannot draw card, no more cards left in deck"); //we need to recreate the deck here.
         }
-        getCurrentPlayerHand().Add(deck[0]);
-        Deck.deckInstance.removeCard();
-        Debug.Log(getCurrentPlayerHand().Count);
-        if (getCurrentPlayerHand().Count < 8)
+        getCurrentPlayerHand().Add(deck[0]); //grab the first card to add to hand
+        Deck.deckInstance.removeCard(); //remove it from the deck 
+        Debug.Log(getCurrentPlayerHand().Count); 
+        if (getCurrentPlayerHand().Count < 8) //reload the deck if we have less than 8 cards
         {
             Debug.Log("Showing deck");
             showDeck(getStart());
-        }
-        Debug.Log("BOOL CREATEDECK: " + checkcreateDeck);
-        if(checkcreateDeck == false){
-            endPlayerTurn();
         }
     }
 
@@ -113,10 +106,10 @@ public class tempHumanPlayer : tempPlayer
         {
             Debug.Log("cannot draw card, no more cards left in deck"); //we need to recreate the deck here.
         }
-        getCurrentPlayerHand().Add(deck[0]);
-        Deck.deckInstance.removeCard();
+        getCurrentPlayerHand().Add(deck[0]); //grab the first card to add to hand
+        Deck.deckInstance.removeCard(); //remove it from the deck 
         Debug.Log(getCurrentPlayerHand().Count);
-        if (getCurrentPlayerHand().Count < 8)
+        if (getCurrentPlayerHand().Count < 8)  //reload the deck if we have less than 8 cards
         {
             Debug.Log("Showing deck");
             showDeck(getStart());
@@ -140,6 +133,7 @@ public class tempHumanPlayer : tempPlayer
     public void showDeck(int start)
     {
         //shows seven cards of the player's current hand from the starting index on
+        //reset all the images so no old cards are shown
         cardOne.sprite = null;
         cardTwo.sprite = null;
         cardThree.sprite = null;
@@ -151,16 +145,16 @@ public class tempHumanPlayer : tempPlayer
         //get all the image names into a sprite array
         //getting all the names of the images we will need to load onto buttons
         List<int> indexes = new List<int>();
-        int limit = Math.Min(getCurrentPlayerHand().Count, start + 7);
+        int limit = Math.Min(getCurrentPlayerHand().Count, start + 7); //find the min of the count or start + 7 because we might only have 3 cards 
         for (int i = start; i < limit; i++)
         {
             string path = "";
-            path = getCurrentPlayerHand()[i].MyColor.ToString() + getCurrentPlayerHand()[i].MyValue.ToString();
-            for (int j = 0; j < cardNames.Length; j++)
+            path = getCurrentPlayerHand()[i].MyColor.ToString() + getCurrentPlayerHand()[i].MyValue.ToString(); //get the card name
+            for (int j = 0; j < cardNames.Length; j++) 
             {
-                if (cardNames[j] == path)
+                if (cardNames[j] == path) //find the card name 
                 {
-                    indexes.Add(j);
+                    indexes.Add(j); //add the index so we remember where the card was 
                     break;
                 }
             }
@@ -173,25 +167,25 @@ public class tempHumanPlayer : tempPlayer
             {
                 //decides which card is displayed where
                 case 1:
-                    cardTwo.sprite = cardImages[indexes[1]];
+                    cardTwo.sprite = cardImages[indexes[1]]; //load second card
                     break;
-                case 2:
-                    cardThree.sprite = cardImages[indexes[2]];
+                case 2: 
+                    cardThree.sprite = cardImages[indexes[2]]; //load third card
                     break;
                 case 3:
-                    cardFour.sprite = cardImages[indexes[3]];
+                    cardFour.sprite = cardImages[indexes[3]]; //load fourth card
                     break;
                 case 4:
-                    cardFive.sprite = cardImages[indexes[4]];
+                    cardFive.sprite = cardImages[indexes[4]]; //load fith card
                     break;
                 case 5:
-                    cardSix.sprite = cardImages[indexes[5]];
+                    cardSix.sprite = cardImages[indexes[5]]; //load sixth card 
                     break;
                 case 6:
-                    cardSeven.sprite = cardImages[indexes[6]];
+                    cardSeven.sprite = cardImages[indexes[6]]; //load seventh card
                     break;
                 default:
-                    cardOne.sprite = cardImages[indexes[0]];
+                    cardOne.sprite = cardImages[indexes[0]]; //load first card (always)
                     break;
             }
         }
@@ -244,7 +238,7 @@ public class tempHumanPlayer : tempPlayer
         if(tempGame.gameInstance.validCard(getCurrentPlayerHand()[playedCard])) //checks to make sure the card being played is valid: ie is it the same color or value as the previous card
         {
             string givenCardName = getCurrentPlayerHand()[playedCard].MyColor.ToString() + getCurrentPlayerHand()[playedCard].MyValue.ToString();
-            if((int)getCurrentPlayerHand()[playedCard].MyValue > 12){    
+            if((int)getCurrentPlayerHand()[playedCard].MyValue > 12){     //check for a colorchanger or draw 4 to pick a new color
                 tempGame.gameInstance.colorSelection();
             }
             else{
@@ -259,7 +253,7 @@ public class tempHumanPlayer : tempPlayer
         }
 
         if(getCurrentPlayerHand().Count == 1){
-            tempGame.gameInstance.unoButtonPosition();
+            tempGame.gameInstance.unoButtonPosition(); //player is at uno
         }
 
         /*Deck newestCard = getCurrentPlayerHand()[playedCard];
@@ -283,10 +277,10 @@ public class tempHumanPlayer : tempPlayer
         //displays the previous card in the human's deck after clicking the "previous card" button
         for (int j = 0; j < cardNames.Length; j++)
         {
-            if (cardNames[j] == cardName)
+            if (cardNames[j] == cardName) //find the card image 
             {
-                Deck.deckInstance.setLastPlayed(getCurrentPlayerHand()[playedCard], cardImages[j]);
-                previousCard.sprite = cardImages[j];
+                Deck.deckInstance.setLastPlayed(getCurrentPlayerHand()[playedCard], cardImages[j]); //set last played
+                previousCard.sprite = cardImages[j]; //load last played image
                 break;
             }
         }
@@ -295,8 +289,8 @@ public class tempHumanPlayer : tempPlayer
     public void nextCard()
     {
         //displays the next card in the human's deck after clicking the "next card" button
-        int start = tHumanPlayer.getStart();
-        if (start + 7 + 1 > getCurrentPlayerHand().Count)
+        int start = tHumanPlayer.getStart(); //find where we start
+        if (start + 7 + 1 > getCurrentPlayerHand().Count) //make sure there are cards to load
         { //start + 7 is the last card in deck, +1 is the next card 
             Debug.Log("No more cards");
             return;
@@ -304,7 +298,7 @@ public class tempHumanPlayer : tempPlayer
         else
         {
             start = start + 1;
-            tHumanPlayer.setRange(start);
+            tHumanPlayer.setRange(start); //change the range to include new cards 
             showDeck(start);
         }
     }
@@ -313,7 +307,7 @@ public class tempHumanPlayer : tempPlayer
     {
         //displays the previous card in the human's deck after clicking the "previous card" button
         int start = tHumanPlayer.getStart();
-        if (start - 1 < 0)
+        if (start - 1 < 0) //make sure we dont go to a negative index
         { //make sure we have a card to the left before we go left
             Debug.Log("No more cards");
             return;
@@ -321,14 +315,13 @@ public class tempHumanPlayer : tempPlayer
         else
         {
             start = start - 1;
-            tHumanPlayer.setRange(start);
+            tHumanPlayer.setRange(start); //change the range to include new cards 
             showDeck(start);
         }
     }
 
     public void notifyObserver() {
         observer.uno();
-
     }
 
 }

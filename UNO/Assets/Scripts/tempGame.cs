@@ -6,6 +6,8 @@ using System;
 using Random = UnityEngine.Random;
 using System.Net.Http;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
+
 
 
 
@@ -29,14 +31,19 @@ public class tempGame : MonoBehaviour
 
         foreach(AIPlayer newPlayer in players)
         {
+            //check to see if AI player has won
             if (newPlayer.cardCount() == 0)
             {
-                Debug.Log("An AI player has won the game! Better luck next time..."); //ask Seok how to add in text that you can customize text for and make visible and invisible
+                Debug.Log("An AI player has won the game! Better luck next time...");
+                disablePlayerButtons(); //game over -> you lost!
+                SceneManager.LoadScene("Lost");
             }
         }
         if (tempHumanPlayer.tHumanPlayer.getCurrentPlayerHand().Count == 0)
         {
             Debug.Log("You won the game, congratulations!!");
+            disablePlayerButtons(); //game over -> you won!
+            SceneManager.LoadScene("Win");
         }
     }
     private int currPlayerTurn;
@@ -76,7 +83,7 @@ public class tempGame : MonoBehaviour
     bool skipHuman = false;
     bool AIDrewCard = false;
 
-    public bool getAIDrewCard()
+    public bool getAIDrewCard() //checks to see if an AI player had to draw a card in one of the rounds
     {
         return AIDrewCard;
     }
@@ -102,7 +109,7 @@ public class tempGame : MonoBehaviour
         numTurns = 0;
     }
 
-    public void setDirectionOfPlay(bool direction){
+    public void setDirectionOfPlay(bool direction){ //used for our skip card
         this.directionOfPlay = direction;
     }
 
@@ -131,21 +138,18 @@ public class tempGame : MonoBehaviour
         tempGame game = gameInstance;
         game.setDirectionOfPlay(false); //reverse is false so goes player, AI1, AI2, AI3
 
-        //talk w/ Seok about whether we want to put create player deck into here or keep it in humanPlayer
-        tempHumanPlayer human = tempHumanPlayer.tHumanPlayer;
-
 
     }
 
     public bool validCard(Deck card)
     {
+        //checks to see whether a played card is valid -> same color/number/wildcard as last played card
          Debug.Log("Validating card");
          try {
              if (Deck.deckInstance.getLastPlayed().MyColor != null || Deck.deckInstance.getLastPlayed().MyValue != null)
              {
                  if (card.MyColor == Deck.deckInstance.getLastPlayed().MyColor || card.MyValue == Deck.deckInstance.getLastPlayed().MyValue || (int)card.MyValue > 12)
                  {
-                     Debug.Log("last played was not null");
                      return true;
                  }
                 
@@ -159,9 +163,8 @@ public class tempGame : MonoBehaviour
     }
      public void createAIPlayers()
      {
-        //create instances of the 3 AI players
-        //implementation of Factory pattern!
-        //AIPlayer aiPlayer1 = AIPlayerFactory.create("AI1");
+        //create instances of the 3 AI players using the PROTOTYPE DESIGN PATTERN
+
          AIPlayer aiPlayer1 = new AIPlayer("AI1");
          aiPlayer1.createHand();
          players.Add(aiPlayer1);
@@ -169,27 +172,18 @@ public class tempGame : MonoBehaviour
          aiPlayer2.setName("AI2");
          AIPlayer aiPlayer3 = (AIPlayer)aiPlayer1.getClone();
          aiPlayer3.setName("AI3");
-        //Debug.Log("number of AI players" + players.Count);
-        //AIPlayer aiPlayer2 = AIPlayerFactory.create("AI2");
-        //AIPlayer aiPlayer2 = new AIPlayer("AI2");
+
          aiPlayer2.createHand();
          players.Add(aiPlayer2);
-        //Debug.Log("number of AI players" + players.Count);
-        //AIPlayer aiPlayer3 = AIPlayerFactory.create("AI3");
-         //AIPlayer aiPlayer3 = new AIPlayer("AI3");
+
          aiPlayer3.createHand();
          players.Add(aiPlayer3);
-         //Debug.Log("number of AI players" + players.Count);
-        //their create deck is generated when awakened
     }
-
-    public void createPause()
-    {
-        //System.Threading.Thread.Sleep(1500);
-    }
+    
     public void playAIRound()
     {
         //COMPOSITE pattern is found in this function -> we use players list as a singular
+        //credit given to https://ronnieschaniel.medium.com/object-oriented-design-patterns-explained-using-practical-examples-84807445b092 for showing us how to use the composite pattern
         Debug.Log("entered AI round:" + players.Count);
         tempGame game = gameInstance;
         List<Deck> deck = Deck.deckInstance.getDeck(); //current cards available to draw in deck
@@ -207,6 +201,8 @@ public class tempGame : MonoBehaviour
 
         while (isContinue == true)
         {
+            //plays game until human player is reached
+            //it is possible for the AI players to go twice if a reverse card is played and the cycle goes backwardss
             Debug.Log("last played value: " + Deck.deckInstance.getLastPlayed().MyValue);
             Debug.Log("playerTracker: " + playerTracker);
             bool humanSkip = tempHumanPlayer.tHumanPlayer.getSkipHuman();
@@ -249,9 +245,8 @@ public class tempGame : MonoBehaviour
                 if (getAIDrewCard() == false)
                 {
                     players[playerTracker].playCard(playedCard); //shows off the specific card chosen last by AI
-                                                                 //Debug.Log("creating pause right now");
-                                                                 //createPause();
-                    if ((int)playedCard.MyValue == 10)
+
+                    if ((int)playedCard.MyValue == 10) //skip card
                     {
                         lastSkip = true;
                     }
@@ -270,7 +265,7 @@ public class tempGame : MonoBehaviour
 
                     }
                 }
-                AIDrewCard = false;
+                AIDrewCard = false; //reset variable
             }
            
             
@@ -283,12 +278,12 @@ public class tempGame : MonoBehaviour
             {
                 playerTracker--;
             }
-            if (playerTracker == 3 || playerTracker == -1)
+            if (playerTracker == 3 || playerTracker == -1) //reached the human player so end AI turn
             {
                 isContinue = false;
             }
             
-            tempHumanPlayer.tHumanPlayer.consequence();
+            tempHumanPlayer.tHumanPlayer.consequence(); //checks to see if the human needs to draw 2/4
         }
 
         if ((int)Deck.deckInstance.getLastPlayed().MyValue == 10)
@@ -298,7 +293,7 @@ public class tempGame : MonoBehaviour
 
         //now that AI is finishes the human can play their card
         Debug.Log("here");
-        enablePlayerButtons();
+        enablePlayerButtons(); //lets the human take a turn now
     }
 
     public void enablePlayerButtons(){
@@ -339,7 +334,9 @@ public class tempGame : MonoBehaviour
         unoCalled = status;
     }
    
-    public void colorSelection(){
+    public void colorSelection()
+    {
+        //updates the UI for the sprites (card image stuff)
         colorSelector.sprite = tempHumanPlayer.tHumanPlayer.cardImages[51];
         colorSelector.transform.position = new Vector3(960.0f, 540.0f, 0);
         green.transform.position = new Vector3(1080.0f, 425.0f, 0);
@@ -351,7 +348,7 @@ public class tempGame : MonoBehaviour
 
     public void changeColor(int colorSelected){
         //disable other buttons
-
+        //lets the user pick a color after drawing a wildcard 
         switch (colorSelected){
             case 1:
                 Debug.Log("green selected");
@@ -401,7 +398,7 @@ public class tempGame : MonoBehaviour
         setUnoCalled(true);
         enablePlayerButtons();
         uno.transform.position = new Vector3(Random.Range(-5000.0f, -18500.0f), Random.Range(-5000.0f, -10000.0f), 0);
-        return; //need to do something idk what yet
+        return; 
     }
 
     public void setCurrentPlayer(string player){
@@ -409,43 +406,6 @@ public class tempGame : MonoBehaviour
     }
 
         
-
-
-
-    //need to have a check to make sure that the played card is not a reverse
-
-    //         //user will choose their card to play - Seok how do we get the instance of UnoCard?
-    //         List<UnoCard> deck = DeckOfCards.getDeck;//does this get the same deck?
-
-
-
-    //         //need to have a function that grabs a card for AI player depending on their deck
-    //         foreach (Player playah in game.players)
-    //         {
-    //             UnoCard selected = deck.getDeck[0];
-    //             if (playah.getName().Contains("AI"))
-    //             {
-
-    //                 //AI player -> 
-
-    //                 playah.playCard(selected, game); //not correct -> need to change cardSelected to what function returns
-
-    //             }
-    //             else
-    //             {
-    //                 //human player -> 
-    //                 playah.playCard(selected, game); //not correct -> need to change cardSelected to clicked on card
-
-    //             }
-
-    //             if (playah.getCurrentHand().Count == 0)
-    //             {
-    //                 //means that a player won
-    //                 return true;
-    //             }
-    //         }
-
-    //         return false;
 
 
 

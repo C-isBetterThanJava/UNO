@@ -17,6 +17,7 @@ public class AIPlayer : tempPlayer, AIPrototype
     }
     public AIPrototype getClone()
     {
+        //credit to https://www.javatpoint.com/prototype-design-pattern for showing us how to implement a prototype design pattern
         return new AIPlayer(name);
     }
 
@@ -56,10 +57,6 @@ public class AIPlayer : tempPlayer, AIPrototype
                 possibleCards.Add(card);
                 Debug.Log(card.MyColor);
             }
-            /*if (card.MyColor == Deck.deckInstance.getLastPlayed().MyColor || (int)card.MyValue == ((int)Deck.deckInstance.getLastPlayed().MyValue) || (int)card.MyValue > 12)
-            {
-                
-            }*/
         }
         Debug.Log("size of possible cards: " + possibleCards.Count);
         if (possibleCards.Count == 0)
@@ -90,30 +87,18 @@ public class AIPlayer : tempPlayer, AIPrototype
 
     public void createHand(){
 
-        for(int i = 0; i < 7; i++){
+        for(int i = 0; i < 7; i++){ //creates a deck of 7 starting out for each AI player
             this.drawCard();
         }
     }
 
     public int cardCount(){
-        return this.getCurrentHand().Count;
+        return this.getCurrentHand().Count; 
     }
 
-    // public void drawCard(){
-    //     Debug.Log("this is draw card in tempPlayer");
-    //     List<Deck> deck = Deck.deckInstance.getDeck();
-    //     Debug.Log("after deck");
-    //     this.getCurrentHand().Add(deck[0]);
-    //     Debug.Log(2);
-    //     Deck.deckInstance.removeCard();
-    //     for(int i = 0; i< this.getCurrentHand().Count; i++){
-    //         Debug.Log(this.getCurrentHand()[i].MyColor);
-    //         Debug.Log(this.getCurrentHand()[i].MyValue);
-    //     }
-    // }
     private void addToCurrentHand(Deck newCard)
     {
-        currentHand.Add(newCard);
+        currentHand.Add(newCard); //adds card to deck
     }
     
     public void drawCard(){
@@ -133,39 +118,32 @@ public class AIPlayer : tempPlayer, AIPrototype
         //Debug.Log(deck[0].MyColor);
         //Debug.Log(deck[0].MyValue);
         this.addToCurrentHand(deck[0]);
-        /*for (int i = 0; i < this.getCurrentHand().Count; i++)
-        {
-            Debug.Log("this current card: " + this.getCurrentHand()[i].MyColor);
-        }*/
-        //this.getCurrentHand().Add(deck[0]);
 
-        Deck.deckInstance.removeCard();
+        Deck.deckInstance.removeCard(); //since card was added to someone's current hand, need to remove from available deck
     }
 
     public void playCard(Deck card){
         int playedCard = 0;
-        for(int i = 0; i < this.getCurrentHand().Count; i++){
+        for(int i = 0; i < this.getCurrentHand().Count; i++)
+        {
+            //checks input against all the cards in their deck
             if(card.MyColor.ToString() + card.MyValue.ToString() == this.getCurrentHand()[i].MyColor.ToString() + this.getCurrentHand()[i].MyValue.ToString()){
                 playedCard = i;
             }
         }
         if(tempGame.gameInstance.validCard(getCurrentHand()[playedCard]))
         {
+            //confirms that chosen card is valid to play -> same color, number, wildcard
             string givenCardName = getCurrentHand()[playedCard].MyColor.ToString() + getCurrentHand()[playedCard].MyValue.ToString();
-            /*if((int)getCurrentHand()[playedCard].MyValue > 12){
-                // string newColor = tempGame.gameInstance.colorSelection();
-                tempGame.gameInstance.colorSelection();
-                // givenCardName = newColor + getCurrentPlayerHand()[playedCard].MyValue.ToString();
-            }*/
-            updatePreviousCard(playedCard, givenCardName);
-            getCurrentHand().RemoveAt(playedCard);
+            updatePreviousCard(playedCard, givenCardName); //for UI
+            getCurrentHand().RemoveAt(playedCard); //since played card, remove that from current hand
         }
         else
         {
             Debug.Log("Invalid Card");
         }
         if(this.getCurrentHand().Count == 1){
-            tempGame.gameInstance.unoButton();
+            tempGame.gameInstance.unoButton(); //only reveals uno button if there is one card left
         }
     }
 
@@ -179,7 +157,8 @@ public class AIPlayer : tempPlayer, AIPrototype
 
     public void updatePreviousCard(int playedCard, string cardName)
     {
-        tempHumanPlayer player = tempHumanPlayer.tHumanPlayer;
+        //function is meant to update UI
+        tempHumanPlayer player = tempHumanPlayer.tHumanPlayer; 
         for (int j = 0; j < player.cardNames.Length; j++)
         {
             if (player.cardNames[j] == cardName)

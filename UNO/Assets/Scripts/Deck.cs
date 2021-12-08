@@ -9,17 +9,7 @@ using System.Threading.Tasks;
 
 public class Deck : MonoBehaviour
 {
-    // // Start is called before the first frame update
-    // void Start()
-    // {
-        
-    // }
-
-    // // Update is called once per frame
-    // void Update()
-    // {
-        
-    // }
+   // credit given to https://www.youtube.com/watch?v=6SovupmTRt8 for showing us how to create the Deck class and then implement the createDeck() and shuffleDeck() functions based off of a poker game
     const int NUM_OF_CARDS = 60;
     private List<Deck> deck = new List<Deck>();
     private Deck lastPlayed;

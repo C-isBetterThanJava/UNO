@@ -6,6 +6,7 @@ using System;
 using Random = UnityEngine.Random;
 using System.Net.Http;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 
 
@@ -31,12 +32,14 @@ public class tempGame : MonoBehaviour
         {
             if (newPlayer.cardCount() == 0)
             {
-                Debug.Log("An AI player has won the game! Better luck next time..."); //ask Seok how to add in text that you can customize text for and make visible and invisible
+                Debug.Log("An AI player has won the game! Better luck next time...");
+                SceneManager.LoadScene("Lost");
             }
         }
         if (tempHumanPlayer.tHumanPlayer.getCurrentPlayerHand().Count == 0)
         {
             Debug.Log("You won the game, congratulations!!");
+            SceneManager.LoadScene("Win");
         }
     }
     private int currPlayerTurn;
@@ -139,77 +142,47 @@ public class tempGame : MonoBehaviour
 
     public bool validCard(Deck card)
     {
-        // Debug.Log("Validating card");
-        // try {
-        //     if (Deck.deckInstance.getLastPlayed().MyColor != null || Deck.deckInstance.getLastPlayed().MyValue != null)
-        //     {
-        //         if (card.MyColor == Deck.deckInstance.getLastPlayed().MyColor || card.MyValue == Deck.deckInstance.getLastPlayed().MyValue || (int)card.MyValue > 12)
-        //         {
-        //             Debug.Log("last played was not null");
-        //             return true;
-        //         }
+         Debug.Log("Validating card");
+         try {
+             if (Deck.deckInstance.getLastPlayed().MyColor != null || Deck.deckInstance.getLastPlayed().MyValue != null)
+             {
+                 if (card.MyColor == Deck.deckInstance.getLastPlayed().MyColor || card.MyValue == Deck.deckInstance.getLastPlayed().MyValue || (int)card.MyValue > 12)
+                 {
+                     Debug.Log("last played was not null");
+                     return true;
+                 }
                 
-        //     }
-        // }
-        // catch (Exception e) {
-        //     Debug.Log("last played was null");
-        //     return true;
-        // }
-        // return false;
-        return true;
+             }
+         }
+         catch (Exception e) {
+             Debug.Log("last played was null");
+             return true;
+         }
+         return false;
     }
      public void createAIPlayers()
      {
         //create instances of the 3 AI players
-        //implementation of Factory pattern!
-        //AIPlayer aiPlayer1 = AIPlayerFactory.create("AI1");
-         AIPlayer aiPlayer1 = new AIPlayer();
+
+         AIPlayer aiPlayer1 = new AIPlayer("AI1");
          aiPlayer1.createHand();
          players.Add(aiPlayer1);
-        //Debug.Log("number of AI players" + players.Count);
-        //AIPlayer aiPlayer2 = AIPlayerFactory.create("AI2");
-         AIPlayer aiPlayer2 = new AIPlayer();
+         AIPlayer aiPlayer2 = (AIPlayer)aiPlayer1.getClone(); //design pattern: prototype -> used to clone an instance of AIPlayer
+         aiPlayer2.setName("AI2");
+         AIPlayer aiPlayer3 = (AIPlayer)aiPlayer1.getClone();
+         aiPlayer3.setName("AI3");
+
          aiPlayer2.createHand();
          players.Add(aiPlayer2);
-        //Debug.Log("number of AI players" + players.Count);
-        //AIPlayer aiPlayer3 = AIPlayerFactory.create("AI3");
-         AIPlayer aiPlayer3 = new AIPlayer();
+
          aiPlayer3.createHand();
          players.Add(aiPlayer3);
-         //Debug.Log("number of AI players" + players.Count);
-        //their create deck is generated when awakened
     }
-
-    /*public bool playHumanRound()
-    {
-        tempGame game = gameInstance;
-        tempHumanPlayer human = tempHumanPlayer.tHumanPlayer;
-        List<Deck> deck = Deck.deckInstance.getDeck(); //current cards available to draw in deck
-        if (skipHuman == false)
-        {
-            human.playCard(0); //ask Seok how to get button number and convert that to card
-            Deck newCard = new Deck();
-            Deck.deckInstance.setLastPlayed(newCard);
-            if ((int)Deck.deckInstance.getLastPlayed().MyValue == 10 && human.getCurrentPlayerHand().Count > 0)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            skipHuman = false;
-            Debug.Log("human was skipped");
-        }
-
-        return false;
-    }*/
-    public void createPause()
-    {
-        //System.Threading.Thread.Sleep(1500);
-    }
+    
     public void playAIRound()
     {
         //COMPOSITE pattern is found in this function -> we use players list as a singular
+        //credit given to https://ronnieschaniel.medium.com/object-oriented-design-patterns-explained-using-practical-examples-84807445b092 for showing us how to use the composite pattern
         Debug.Log("entered AI round:" + players.Count);
         tempGame game = gameInstance;
         List<Deck> deck = Deck.deckInstance.getDeck(); //current cards available to draw in deck
@@ -371,6 +344,7 @@ public class tempGame : MonoBehaviour
 
     public void changeColor(int colorSelected){
         //disable other buttons
+
         switch (colorSelected){
             case 1:
                 Debug.Log("green selected");
@@ -390,6 +364,18 @@ public class tempGame : MonoBehaviour
                 break;
             default:
                 break;
+
+        string cardName = currentColor.text.ToString() + tempHumanPlayer.tHumanPlayer.getCurrentPlayerHand()[tempHumanPlayer.tHumanPlayer.playedCard].MyValue.ToString();
+        for (int j = 0; j < tempHumanPlayer.tHumanPlayer.cardNames.Length; j++)
+        {
+            if (tempHumanPlayer.tHumanPlayer.cardNames[j] == cardName)
+            {   
+                Deck.deckInstance.setLastPlayed(tempHumanPlayer.tHumanPlayer.getCurrentPlayerHand()[tempHumanPlayer.tHumanPlayer.playedCard], tempHumanPlayer.tHumanPlayer.cardImages[j]);
+                tempHumanPlayer.tHumanPlayer.previousCard.sprite = tempHumanPlayer.tHumanPlayer.cardImages[j];
+                break;
+            }
+        }
+            
         }
         colorSelector.transform.position = new Vector3(-10000.0f, -10000.0f, 0);
         green.transform.position = new Vector3(-10000.0f, -10000.0f, 0);
@@ -407,7 +393,6 @@ public class tempGame : MonoBehaviour
     public void unoButton(){
         setUnoCalled(true);
         enablePlayerButtons();
-        tempHumanPlayer.tHumanPlayer.notifyObserver();
         uno.transform.position = new Vector3(Random.Range(-5000.0f, -18500.0f), Random.Range(-5000.0f, -10000.0f), 0);
         return; //need to do something idk what yet
     }
